@@ -1,6 +1,6 @@
 import http from 'http';
 import cors from 'cors';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import addErrorHandler from './middleware/error-handler';
 import registerRoutes from './routes';
@@ -41,9 +41,9 @@ export default class App {
   }
 
   private parseRequestHeader(
-    req: express.Request,
-    res: express.Response,
-    next: Function
+    req: Request,
+    res: Response,
+    next: NextFunction
   ): void {
     // parse request header
     // console.log(req.headers.access_token);
