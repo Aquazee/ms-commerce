@@ -14,7 +14,7 @@ class Environment implements IEnvironment {
 
   constructor(NODE_ENV?: string) {
     const env: string = NODE_ENV || process.env.NODE_ENV || Environments.DEV;
-    const port: string | undefined | number = process.env.PORT || 3146;
+    const port: string | undefined | number = process.env.PORT || 3000;
     this.setEnvironment(env);
     this.port = Number(port);
     this.applyEncryption = Boolean(process.env.APPLY_ENCRYPTION);

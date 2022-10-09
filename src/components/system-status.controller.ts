@@ -4,15 +4,15 @@ import * as process from 'process';
 import { Application, NextFunction, Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
-import ApiError from '../../abstractions/ApiError';
-import * as responsehandler from '../../lib/response-handler';
-import BaseApi from '../BaseApi';
+import ApiError from '../abstractions/ApiError';
 import {
   IServerTimeResponse,
   IResourceUsageResponse,
   IProcessInfoResponse,
   ISystemInfoResponse,
-} from './system-status.types';
+} from '../interfaces/system-status.interface';
+import * as responsehandler from '../lib/response-handler';
+import BaseApi from './BaseApi';
 
 /**
  * Status controller
