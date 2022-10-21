@@ -34,3 +34,16 @@ export interface IUserModel extends Model<IUserDoc> {
 export interface IUserInterface {
   userValidation: any;
 }
+
+export interface IUserService {
+  // constructor: () => void;
+  createUser: (userBody: NewCreatedUser) => Promise<IUserDoc>;
+  updateUserById: (
+    userId: string,
+    updateBody: UpdateUserBody
+  ) => Promise<IUserDoc | null>;
+  registerUser: (userBody: NewCreatedUser) => Promise<IUserDoc>;
+  getUserByEmail: (email: string) => Promise<IUserDoc | null>;
+  getUserById: (id: string) => Promise<IUserDoc | null>;
+  verifyUser: (id: string) => Promise<IUserDoc | null>;
+}

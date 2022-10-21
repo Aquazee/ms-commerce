@@ -17,7 +17,7 @@ class Environment implements IEnvironment {
     const port: string | undefined | number = process.env.PORT || 3000;
     this.setEnvironment(env);
     this.port = Number(port);
-    this.applyEncryption = Boolean(process.env.APPLY_ENCRYPTION);
+    this.applyEncryption = process.env.APPLY_ENCRYPTION === 'true';
     this.secretKey = String(process.env.SECRET_KEY);
   }
 

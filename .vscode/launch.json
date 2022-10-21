@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
-            "request": "launch",
             "name": "Launch Program",
+            "program": "${workspaceFolder}/index.js",
+            "request": "launch",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "args": ["npm","start"]
+            "type": "node"
         },
         {
             "type": "node",
@@ -41,7 +41,7 @@
                 "${workspaceFolder}/node_modules/.bin/jest",
                 "--config",
                 "${workspaceFolder}/jest.config.js",
-                "--runInBand", 
+                "--runInBand",
                 "${workspaceFolder}/tests/unit-tests/environments/environments.spec.ts",
                 "-t",
                 "should set the current environment"

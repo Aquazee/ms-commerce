@@ -2,12 +2,14 @@ import * as http from 'http';
 import { AddressInfo } from 'net';
 import mongoose from 'mongoose';
 
+import ServiceConfig from '../setup/validate/config';
 import App from './App';
 import Environment from './environments/environment';
 import { setGlobalEnvironment } from './global';
 import logger from './lib/logger';
 import serviceErrorHandler from './lib/service-error-handler';
 
+const { config } = new ServiceConfig();
 const env: Environment = new Environment();
 setGlobalEnvironment(env);
 const app: App = new App();
@@ -29,10 +31,13 @@ function serverListening(): void {
 app
   .init()
   .then(() => {
-    mongoose.connect(process.env.DB_URL as string).then((res) => {
+    const { database } = config.service_config.infrastructure;
+    const { host, port, name } = database.mongodb;
+    const connectionString = `${database.enabled}://${host}:${port}/${name}`;
+    mongoose.connect(connectionString).then(() => {
       logger.info('Db Connected');
-      app.express.set('port', env.port);
-      server = app.httpServer; // http.createServer(App);
+      app.express.set('port', config.service_config.server.public_port);
+      server = app.httpServer;
       server.on('error', serverError);
       server.on('listening', serverListening);
       server.listen(env.port);
@@ -42,7 +47,7 @@ app
 
 process.on('unhandledRejection', serviceErrorHandler.handleExRe);
 process.on('uncaughtException', serviceErrorHandler.handleExRe);
-process.on('beforeExit', serviceErrorHandler.beforeExitHandler);
+// process.on('beforeExit', serviceErrorHandler.beforeExitHandler);
 process.on('exit', serviceErrorHandler.sigError);
 process.on('SIGINT', serviceErrorHandler.sigError);
 process.on('SIGTERM', serviceErrorHandler.sigError);

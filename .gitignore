@@ -13,3 +13,6 @@ logs/
 .env.prod
 .env.staging
 **/.DS_Store
+
+# Ignore Config yml
+config.yml

@@ -2,6 +2,8 @@ import http from 'http';
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
+import passport from 'passport';
+import ServiceConfig from '../setup/validate/config';
 import addErrorHandler from './middleware/error-handler';
 import registerRoutes from './routes';
 
@@ -38,6 +40,8 @@ export default class App {
     this.express.use(express.json({ limit: '100mb' }));
     this.express.use(express.urlencoded({ limit: '100mb', extended: true }));
     this.express.use(cors());
+    this.express.use(express.static('static'));
+    this.express.use(passport.authenticate('session'));
   }
 
   private parseRequestHeader(

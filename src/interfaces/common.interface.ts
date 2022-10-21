@@ -11,3 +11,12 @@ export interface IAddressModel {
   country: string;
   postal_code: string;
 }
+
+export type IHTTPMethods =
+  | 'GET'
+  | 'PUT'
+  | 'POST'
+  | 'PATCH'
+  | 'DELETE'
+  | 'OPTIONS'
+  | 'HEAD';

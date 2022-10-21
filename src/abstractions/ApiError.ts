@@ -6,21 +6,23 @@ export interface IError {
     };
   };
   message: string;
-  name: string;
+  error: string;
 }
 
 class ApiError extends Error implements IError {
+  public error: string;
+
   public status = 500;
 
   public success = false;
 
   public fields: { name: { message: string } };
 
-  constructor(msg: string, statusCode: number, name: string = 'ApiError') {
+  constructor(msg: string, statusCode?: number, name: string = 'ApiError') {
     super();
+    this.status = statusCode || this.status;
+    this.error = name;
     this.message = msg;
-    this.status = statusCode;
-    this.name = name;
   }
 }
 
