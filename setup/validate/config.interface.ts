@@ -74,6 +74,7 @@ export interface Server {
   jwt_config: IJwtConfig;
   allowed_login_attempt: number;
   block_hours: number;
+  email_verification_max_days: number;
 }
 
 export interface ErrorIndexes {

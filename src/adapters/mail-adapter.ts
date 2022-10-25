@@ -1,4 +1,5 @@
 import path from 'path';
+import { token } from 'morgan';
 import nodemailer, { Transporter } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import nunjucks from 'nunjucks';
@@ -90,8 +91,12 @@ export default class MailAdapter implements IMailAdapter {
     if (templatePath) {
       nunjucks.configure({ autoescape: true });
       return nunjucks.render(templatePath, {
-        ...userMailData,
-        ...server,
+        ...userMailData.body,
+        ...{
+          domain: `${server.protocol}://${server.host}:${server.public_port}`,
+          url: 'www.proflyl.com',
+          company_name: 'Proflyl',
+        },
       });
     }
     const error = new ApiError(Messages.EmailTemplateNotFound);

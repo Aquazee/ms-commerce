@@ -36,6 +36,18 @@ export const UserError = {
     message: 'Invalid Token.',
     status: httpStatus.BAD_REQUEST,
   },
+
+  InvalidPassword: {
+    error: 'InvalidPassword',
+    message: 'Invalid Password.',
+    status: httpStatus.BAD_REQUEST,
+  },
+
+  InvalidEmailVerification: {
+    error: 'InvalidEmailVerification',
+    message: 'Invalid Email Verification.',
+    status: httpStatus.BAD_REQUEST,
+  },
 };
 
 export const ProductError = {

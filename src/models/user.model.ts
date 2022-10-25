@@ -6,6 +6,7 @@ import validator from 'validator';
 import { IUserDoc, IUserModel } from '../interfaces/user.interface';
 import convertToJSON from '../lib/convert-to-json';
 import { ModifiedBySchema } from './common.model';
+import VerificationModel, { VerificationSchema } from './verification.model';
 
 const { ObjectId } = mongoose.Schema.Types;
 
@@ -55,34 +56,6 @@ const PANCardDetailsSchema = new Schema({
   img: {
     type: String,
     required: true,
-  },
-});
-
-const VerificationDetailsSchema = new Schema({
-  is_verified: {
-    type: Number,
-    default: 0,
-  },
-  fcode: {
-    type: String,
-    default: uuidv4(),
-  },
-});
-
-const VerificationSchema = new Schema({
-  mobile: {
-    type: VerificationDetailsSchema,
-    default: {
-      is_verified: 0,
-      default: uuidv4(),
-    },
-  },
-  email: {
-    type: VerificationDetailsSchema,
-    default: {
-      is_verified: 0,
-      default: uuidv4(),
-    },
   },
 });
 
@@ -194,6 +167,7 @@ const UserSchema = new mongoose.Schema(
     },
     verification: {
       type: VerificationSchema,
+      default: new VerificationModel(),
     },
     wishList: {
       type: [ObjectId],

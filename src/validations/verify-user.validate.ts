@@ -2,8 +2,8 @@ import joi from 'joi';
 import CommonValidate from './common.validate';
 
 const verifyUser = joi.object({
-  userId: CommonValidate.IdValidate.optional(),
-  type: CommonValidate.IdValidate.required(),
+  userId: CommonValidate.IdValidate.required(),
+  type: CommonValidate.IdValidate.optional(),
   fcode: CommonValidate.GuidValidate.required(),
 });
 

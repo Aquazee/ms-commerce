@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import MailAdapter from '../adapters/mail-adapter';
 import UserAccessor from '../data-access/user-accessor';
 import { IUserMailBaseData } from '../interfaces/mail.interface';
@@ -6,6 +8,9 @@ import {
   IUserDoc,
   IUser,
   IRegisterResponse,
+  IRegisterRequestBody,
+  IVerifyUserRequestParams,
+  IResendVerificationEmail,
 } from '../interfaces/user.interface';
 import { EmailTypeDetails } from '../lib/constants';
 import { UserError } from '../lib/errors';
@@ -18,8 +23,6 @@ import UserService from './user.service';
 const scope = `UserService#${1}`;
 
 export default class AuthService {
-  private _mailAdapter;
-
   private _userAccessor;
 
   private _userManager;
@@ -29,7 +32,6 @@ export default class AuthService {
   private _authManager;
 
   constructor() {
-    this._mailAdapter = new MailAdapter();
     this._userAccessor = new UserAccessor();
     this._userManager = new UserManager();
     this._userService = new UserService();
@@ -50,6 +52,37 @@ export default class AuthService {
     // }
     const user = await this._userAccessor.createUser(userBody);
     await this.formDataAndSendEmail(user);
+    return {
+      token: this._authManager.generateToken(user._id),
+      user,
+    };
+  };
+
+  /**
+   * Resend User Verification Email
+   * @param {IResendVerificationEmail} body
+   * @returns {Promise<void>}
+   */
+  resendVerificationEmail = async ({
+    email,
+  }: IResendVerificationEmail): Promise<void> => {
+    const user = await this._userService.createUserEmailVerificationDetails(
+      email
+    );
+    await this.formDataAndSendEmail(user);
+  };
+
+  /**
+   * Login user
+   * @param {NewCreatedUser} userBody
+   * @returns {Promise<IRegisterResponse>}
+   */
+  loginUser = async (
+    body: IRegisterRequestBody
+  ): Promise<IRegisterResponse> => {
+    const user = await this._userService.getUserByEmail(body.email);
+    const passMatch = await user.isPasswordMatch(body.password as string);
+    if (!passMatch) throw UserError.InvalidPassword;
     return {
       token: this._authManager.generateToken(user._id),
       user,
@@ -88,22 +121,34 @@ export default class AuthService {
 
   /**
    * Verify user
-   * @param {NewUserId} userId
+   * @param {UserId} userId
+   * @param { 'email' | 'mobile' } type
+   * @param { 'jwtToken' } token
    * @returns {Promise<IUserDoc>}
    */
-  verifyUser = async (userId: string): Promise<IUserDoc> => {
+  verifyUser = async ({
+    userId,
+    fcode,
+  }: IVerifyUserRequestParams): Promise<IUserDoc> => {
     const user = await this._userService.getUserById(userId);
+    this._authManager.isValidVerification(user.verification.email, fcode);
+
     user.verification.email.is_verified = 1;
+    user.verification.email.verified_date = new Date();
     return user.save();
   };
 
   formDataAndSendEmail = async (user: IUserDoc) => {
     if (user.email) {
       const mailData: IUserMailBaseData = {
-        body: user,
+        body: {
+          email: user.email,
+          user_id: user._id,
+          token: user.verification.email.fcode,
+        },
         event: EmailTypeDetails.UserEmailVerification.name,
       };
-      await this._mailAdapter.sendEmail(mailData);
+      await new MailAdapter().sendEmail(mailData);
     }
   };
 

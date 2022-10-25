@@ -46,6 +46,7 @@ const serviceConfigSchema = joi.object({
         }),
         allowed_login_attempt: joi.number(),
         block_hours: joi.number(),
+        email_verification_max_days: joi.number(),
       })
       .required(),
     infrastructure: joi.object({

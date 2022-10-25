@@ -5,6 +5,7 @@ export interface IValidations {
   forgotPassword: any;
   loginUserValidation: any;
   verifyUser: any;
+  resendVerificationEmail: any;
   getProductValidation: any;
   // updateProductValidation: any;
   // postProductValidation: any;

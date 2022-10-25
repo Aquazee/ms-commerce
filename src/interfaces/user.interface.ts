@@ -8,8 +8,10 @@ export interface ISocialLogin {
 }
 
 export interface IVerificationDetails {
+  verified_date: Date;
   is_verified: number;
   fcode: string;
+  fcode_created: Date;
 }
 
 export interface IVerification {
@@ -79,7 +81,6 @@ export type NewCreatedUser = Omit<
   | 'deactivated_by'
   | 'updated_by'
   | '__v'
-  | 'verification'
 >;
 
 export interface IUserWithTokens {
@@ -89,10 +90,30 @@ export interface IUserWithTokens {
 
 export interface IUserModel extends Model<IUserDoc> {
   isEmailTaken(email: string, excludeUserId?: Types.ObjectId): Promise<boolean>;
+  isPasswordMatch(password: string): Promise<boolean>;
 }
 
 export interface IUserInterface {
   userValidation: any;
+}
+
+export interface IResendVerificationEmail {
+  email: string;
+}
+
+export interface IRegisterRequestBody {
+  email: string;
+  password: string;
+}
+
+export interface IGetUserRequest {
+  userId?: string;
+}
+
+export interface IVerifyUserRequestParams {
+  userId: string;
+  type: string;
+  fcode: string;
 }
 
 export interface IRegisterResponse {

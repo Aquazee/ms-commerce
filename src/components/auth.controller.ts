@@ -7,6 +7,8 @@ import {
   IUser,
   IUserDoc,
   IUserService,
+  IResendVerificationEmail,
+  IVerifyUserRequestParams,
 } from '../interfaces/user.interface';
 import { UserError } from '../lib/errors';
 import * as responsehandler from '../lib/response-handler';
@@ -59,8 +61,8 @@ export default class AuthController extends BaseApi {
       Validator('forgotPassword'),
       this.forgotPassword.bind(this)
     );
-    this.router.post(
-      '/verify-user/:userId/:type/:fcode',
+    this.router.get(
+      '/verify-user/:userId/email/:fcode',
       Validator('verifyUser'),
       this.verifyUser.bind(this)
     );
@@ -86,6 +88,11 @@ export default class AuthController extends BaseApi {
       }),
       this.sociallogin.bind(this)
     );
+    this.router.post(
+      '/resend-verification-email',
+      Validator('resendVerificationEmail'),
+      this.resendVerificationEmail.bind(this)
+    );
   }
 
   public async registerUser(
@@ -94,7 +101,22 @@ export default class AuthController extends BaseApi {
     next: NextFunction
   ): Promise<void> {
     try {
-      const response = await this._authService.registerUser(req.body);
+      await this._authService.registerUser(req.body);
+      this.sendResponse(null, res);
+    } catch (err: any) {
+      next(err);
+    }
+  }
+
+  public async resendVerificationEmail(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const response = await this._authService.resendVerificationEmail(
+        req.body as unknown as IResendVerificationEmail
+      );
       this.sendResponse(response, res);
     } catch (err: any) {
       next(err);
@@ -144,8 +166,10 @@ export default class AuthController extends BaseApi {
     next: NextFunction
   ): Promise<void> {
     try {
-      const user = await this._authService.verifyUser(req.body);
-      this.sendResponse(user, res);
+      await this._authService.verifyUser(
+        req.params as unknown as IVerifyUserRequestParams
+      );
+      this.sendResponse(null, res);
     } catch (err: any) {
       next(err);
     }

@@ -3,7 +3,11 @@ import _ from 'lodash';
 import moment from 'moment';
 import mongoose from 'mongoose';
 import ServiceConfig from '../../setup/validate/config';
-import { IUser, IUserDoc } from '../interfaces/user.interface';
+import {
+  IUser,
+  IUserDoc,
+  IVerificationDetails,
+} from '../interfaces/user.interface';
 import Crypto from '../lib/crypto';
 import { UserError } from '../lib/errors';
 
@@ -90,6 +94,21 @@ class AuthManager {
       throw UserError.InvalidToken;
     }
   };
+
+  isValidVerification(
+    emailVerificationDetails: IVerificationDetails,
+    fcode: string
+  ) {
+    const fcodeMoment = moment(emailVerificationDetails.fcode_created);
+    const now = moment();
+    if (
+      fcodeMoment.diff(now, 'days') >
+        this._config.server.email_verification_max_days ||
+      emailVerificationDetails.fcode !== fcode
+    ) {
+      throw UserError.InvalidEmailVerification;
+    }
+  }
 }
 
 export default AuthManager;
