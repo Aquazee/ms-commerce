@@ -42,6 +42,11 @@ export default class AuthController extends BaseApi {
       Validator('registerUserValidation'),
       this.registerUser.bind(this)
     );
+    this.router.post(
+      '/login',
+      Validator('loginUserValidation'),
+      this.loginUser.bind(this)
+    );
     this.router.get(
       '/token',
       requireAuth,
@@ -90,6 +95,19 @@ export default class AuthController extends BaseApi {
   ): Promise<void> {
     try {
       const response = await this._authService.registerUser(req.body);
+      this.sendResponse(response, res);
+    } catch (err: any) {
+      next(err);
+    }
+  }
+
+  public async loginUser(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const response = await this._authService.loginUser(req.body);
       this.sendResponse(response, res);
     } catch (err: any) {
       next(err);

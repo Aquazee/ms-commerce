@@ -1,6 +1,10 @@
 import { Application, NextFunction, Request, Response } from 'express';
 import passport from 'passport';
-import { IUserDoc, IUserService } from '../interfaces/user.interface';
+import {
+  IGetUserRequest,
+  IUserDoc,
+  IUserService,
+} from '../interfaces/user.interface';
 import { LoginType } from '../lib/constants';
 import { UserError } from '../lib/errors';
 import * as responsehandler from '../lib/response-handler';
@@ -46,7 +50,9 @@ export default class UserController extends BaseApi {
     next: NextFunction
   ): Promise<void> {
     try {
-      const user = await this._userService.getUserById(req.body);
+      const user = await this._userService.getUser(
+        req.params as IGetUserRequest
+      );
       this.sendResponse(user, res);
     } catch (err) {
       next(err);

@@ -3,6 +3,7 @@ export interface IValidations {
   registerUserValidation: any;
   updateUserValidation: any;
   forgotPassword: any;
+  loginUserValidation: any;
   verifyUser: any;
   getProductValidation: any;
   // updateProductValidation: any;
