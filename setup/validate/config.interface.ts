@@ -3,6 +3,15 @@ export interface Auth {
   pass: string;
 }
 
+export interface ThirdPartyLoginCredentials {
+  client_id: string;
+  client_secret: string;
+  callback_url: string;
+}
+export interface Login {
+  facebook: ThirdPartyLoginCredentials;
+  google: ThirdPartyLoginCredentials;
+}
 export interface ICommonConfig {
   host: string;
   port: number;
@@ -23,6 +32,7 @@ export interface SMTP {
 
 export interface ThirdParty {
   smtp: SMTP;
+  login: Login;
 }
 
 interface IDBConfig extends ICommonConfig {
@@ -38,12 +48,32 @@ export interface AllErrors {
   type: string;
 }
 
+export interface ICookieConfig {
+  secret: string;
+  resave: boolean;
+  saveUninitialized: boolean;
+}
+
+export interface IJwtConfig {
+  expiry_mins: number;
+  secret: string;
+}
+
+export interface ICryptoConfig {
+  secret: string;
+}
+
 export interface Server {
   public_port: number;
   private_port: number;
   protocol: 'http' | 'https';
   host: string;
   root_path: string;
+  cookie_config: ICookieConfig;
+  crypto_config: ICryptoConfig;
+  jwt_config: IJwtConfig;
+  allowed_login_attempt: number;
+  block_hours: number;
 }
 
 export interface ErrorIndexes {

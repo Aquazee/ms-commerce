@@ -30,6 +30,22 @@ const serviceConfigSchema = joi.object({
     server: joi
       .object({
         public_port: joi.string(),
+        host: joi.string(),
+        protocol: joi.string(),
+        crypto_config: joi.object({
+          secret: joi.string(),
+        }),
+        cookie_config: joi.object({
+          secret: joi.string(),
+          resave: joi.boolean(),
+          saveUninitialized: joi.boolean(),
+        }),
+        jwt_config: joi.object({
+          expiry_mins: joi.number(),
+          secret: joi.string(),
+        }),
+        allowed_login_attempt: joi.number(),
+        block_hours: joi.number(),
       })
       .required(),
     infrastructure: joi.object({
