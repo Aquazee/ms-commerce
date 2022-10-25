@@ -19,6 +19,8 @@ const jwtExtractor = (req: Request) => {
     token = req.headers.authorization.replace('Bearer ', '').trim();
   } else if (req.body.token) {
     token = req.body.token.trim();
+  } else if (req.params.token) {
+    token = req.params.token.trim();
   }
   if (token) {
     // Decrypts token
