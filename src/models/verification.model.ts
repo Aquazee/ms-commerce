@@ -1,7 +1,15 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
+import VerificationDetailsModel from './VerificationDetailsModel';
 
-const VerificationDetailsSchema = new mongoose.Schema(
+// eslint-disable-next-line import/prefer-default-export
+export default class VerificationModel {
+  public mobile: VerificationDetailsModel;
+
+  public email: VerificationDetailsModel;
+}
+
+export const VerificationDetailsSchema = new mongoose.Schema(
   {
     is_verified: {
       type: Number,
@@ -26,11 +34,6 @@ const VerificationDetailsSchema = new mongoose.Schema(
   }
 );
 
-const VerificationDetailsModel = mongoose.model<any, any>(
-  'VerificationDetails',
-  VerificationDetailsSchema
-);
-
 export const VerificationSchema = new mongoose.Schema(
   {
     mobile: {
@@ -46,10 +49,3 @@ export const VerificationSchema = new mongoose.Schema(
     _id: false,
   }
 );
-
-const VerificationModel = mongoose.model<any, any>(
-  'Verification',
-  VerificationSchema
-);
-
-export default VerificationModel;

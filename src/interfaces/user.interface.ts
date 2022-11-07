@@ -1,4 +1,4 @@
-import { Types, Model, Document } from 'mongoose';
+import { Types, Model, Document, PaginateModel } from 'mongoose';
 import { IAddressModel, IDeactivatedBy } from './common.interface';
 import { AccessAndRefreshTokens } from './token.interface';
 
@@ -8,10 +8,10 @@ export interface ISocialLogin {
 }
 
 export interface IVerificationDetails {
-  verified_date: Date;
   is_verified: number;
   fcode: string;
   fcode_created: Date;
+  verified_date: Date;
 }
 
 export interface IVerification {
@@ -52,7 +52,14 @@ export interface IUser {
   __v: number;
 }
 
-export interface IUserDoc extends IUser, Document {
+export interface IUserDoc extends Document, IUser {
+  id: string;
+  isPasswordMatch(password: string): Promise<boolean>;
+  __v: number;
+}
+
+export interface IUserModel extends PaginateModel<IUserDoc> {
+  isEmailTaken(email: string, excludeUserId?: Types.ObjectId): Promise<boolean>;
   isPasswordMatch(password: string): Promise<boolean>;
 }
 
@@ -86,11 +93,6 @@ export type NewCreatedUser = Omit<
 export interface IUserWithTokens {
   user: IUserDoc;
   tokens: AccessAndRefreshTokens;
-}
-
-export interface IUserModel extends Model<IUserDoc> {
-  isEmailTaken(email: string, excludeUserId?: Types.ObjectId): Promise<boolean>;
-  isPasswordMatch(password: string): Promise<boolean>;
 }
 
 export interface IUserInterface {

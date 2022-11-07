@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { PaginateModel, Schema } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
 
@@ -254,6 +255,8 @@ UserSchema.pre('save', async function (next) {
   }
   next();
 });
+
+UserSchema.plugin(mongoosePaginate);
 
 const User = mongoose.model<IUserDoc, IUserModel>('User', UserSchema);
 
