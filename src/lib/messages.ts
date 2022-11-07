@@ -7,6 +7,8 @@ const Messages = {
   SendEmailSuccess: 'Email sent successfully',
   RabbitMqChannelClosed: 'Closing rabbitmq channel',
   EmailTemplateNotFound: 'Email Template Not Found',
+  RazorpayUserCreationSuccess: 'Razorpay user created successfully',
+  RazorpayUserCreationFailed: 'Razorpay failed to create user',
 };
 
 export default Messages;
