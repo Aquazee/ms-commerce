@@ -10,6 +10,7 @@ import {
   ICommonConfig,
 } from '../../setup/validate/config.interface';
 import ApiError from '../abstractions/ApiError';
+import BaseApi from '../components/BaseApi';
 import {
   IMailOptions,
   IUserMailBaseData,
@@ -25,13 +26,11 @@ interface IMailAdapter {
   sendEmail: (userMailData: IUserMailData) => void;
 }
 
-export default class MailAdapter implements IMailAdapter {
+export default class MailAdapter extends BaseApi {
   private _transport: Transporter<SMTPTransport.SentMessageInfo>;
 
-  private _config: IServiceConfig;
-
   constructor() {
-    this._config = new ServiceConfig().config;
+    super();
     this.init();
   }
 
@@ -49,7 +48,7 @@ export default class MailAdapter implements IMailAdapter {
 
   getConfig() {
     const method = 'getConfig';
-    const { enabled, type } = this._config.service_config.third_party.smtp;
+    const { enabled, type } = this.config.third_party.smtp;
     switch (enabled) {
       case MailServer.ses:
         return this._getSesConfig(type.ses);
@@ -85,7 +84,7 @@ export default class MailAdapter implements IMailAdapter {
     templatePath: string;
     userMailData: IUserMailBaseData;
   }) => {
-    const { server } = this._config.service_config;
+    const { server } = this.config;
     const method = 'renderTemplates';
 
     if (templatePath) {
@@ -124,7 +123,7 @@ export default class MailAdapter implements IMailAdapter {
     try {
       const emailDetails = this.getEmailDetails(userMailData.event);
       const templatePath = path.resolve(
-        me._config.service_config.server.root_path + emailDetails.templatePath
+        me.config.server.root_path + emailDetails.templatePath
       );
       const mailOption: IMailOptions = {
         to: userMailData.body.email,
@@ -151,4 +150,8 @@ export default class MailAdapter implements IMailAdapter {
       throw ex;
     }
   };
+
+  register() {
+    throw new Error('Method not implemented.');
+  }
 }

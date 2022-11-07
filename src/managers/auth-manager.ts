@@ -1,8 +1,9 @@
+import { extend } from 'joi';
 import jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import moment from 'moment';
 import mongoose from 'mongoose';
-import ServiceConfig from '../../setup/validate/config';
+import BaseApi from '../components/BaseApi';
 import {
   IUser,
   IUserDoc,
@@ -11,13 +12,11 @@ import {
 import Crypto from '../lib/crypto';
 import { UserError } from '../lib/errors';
 
-class AuthManager {
-  private _config;
-
+class AuthManager extends BaseApi {
   private _crypto;
 
   constructor() {
-    this._config = new ServiceConfig().config.service_config;
+    super();
     this._crypto = new Crypto();
   }
 
@@ -26,7 +25,7 @@ class AuthManager {
    * @param {Object} user - user object
    */
   generateToken = (user: IUser) => {
-    const { jwt_config, crypto_config } = this._config.server;
+    const { jwt_config, crypto_config } = this.config.server;
     // Gets expiration time
     const expiration =
       Math.floor(Date.now() / 1000) + 60 * jwt_config.expiry_mins;
@@ -49,7 +48,7 @@ class AuthManager {
    * @param {Object} user - user object
    */
   blockUser = async (user: IUserDoc) => {
-    const { block_hours } = this._config.server;
+    const { block_hours } = this.config.server;
     const blockExpires = moment(new Date()).add(block_hours, 'h');
     _.set(user, 'block_expires', blockExpires);
   };
@@ -59,7 +58,7 @@ class AuthManager {
    * @param {Object} user - user object
    */
   IsBlockExpired = (user: IUserDoc) => {
-    const { allowed_login_attempt } = this._config.server;
+    const { allowed_login_attempt } = this.config.server;
     return (
       user.login_attempts > allowed_login_attempt &&
       user.block_expires <= new Date()
@@ -81,7 +80,7 @@ class AuthManager {
 
   getUserIdFromToken = async (token: string) => {
     try {
-      const { jwt_config, crypto_config } = this._config.server;
+      const { jwt_config, crypto_config } = this.config.server;
       const decoded = jwt.verify(
         Crypto.decrypt(token, crypto_config.secret),
         jwt_config.secret
@@ -103,11 +102,15 @@ class AuthManager {
     const now = moment();
     if (
       fcodeMoment.diff(now, 'days') >
-        this._config.server.email_verification_max_days ||
+        this.config.server.email_verification_max_days ||
       emailVerificationDetails.fcode !== fcode
     ) {
       throw UserError.InvalidEmailVerification;
     }
+  }
+
+  register() {
+    throw new Error('Method not implemented.');
   }
 }
 
