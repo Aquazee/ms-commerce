@@ -1,4 +1,4 @@
-import { Types, Model, Document } from 'mongoose';
+import { Types, Model, Document, PaginateModel } from 'mongoose';
 import { IAddressModel, IDeactivatedBy } from './common.interface';
 import { AccessAndRefreshTokens } from './token.interface';
 
@@ -8,7 +8,7 @@ export interface Dimension {
   size_unit: string;
 }
 
-export interface Warranty {
+export interface IWarranty {
   covered: string;
   not_covered: string;
   unit: string;
@@ -20,7 +20,7 @@ export interface SellerInfo {
   seller_id: string;
 }
 
-export interface Attachments {
+export interface IAttachments {
   low_res: string;
   high_res: string;
   name: string;
@@ -28,24 +28,39 @@ export interface Attachments {
   sequence: number;
 }
 
-export interface Specifications {
+export interface ISpecifications {
   material: any;
   pattern: any;
   dimensions: Dimension[];
-  warranty: Warranty;
+  warranty: IWarranty;
 }
 
+export interface ITax {
+  tax_type: string;
+  tax_amount: string;
+  taxable_on_value: string;
+}
+
+export interface ICost {
+  mrp: number;
+  selling_price: number;
+  gross_amount: number;
+  discount: number;
+  tax_info: ITax;
+  currency: string;
+}
 export interface IProduct {
   id?: string;
   brand?: string;
   custom_label?: string;
   title?: string;
   description?: string;
-  attachments?: Attachments;
+  attachments?: IAttachments;
   link?: string;
   product_type?: string;
+  cost: ICost;
   gender?: string;
-  specifications?: Specifications;
+  specifications?: ISpecifications;
   handling_time?: any;
   manufacturer_info?: any;
   seller_info?: SellerInfo;
@@ -56,7 +71,10 @@ export interface IProduct {
   __v: number;
 }
 
-export interface IProductDoc extends IProduct, Document {}
+export interface IProductDoc extends Document, IProduct {
+  id: string;
+  __v: number;
+}
 
 export type UpdateProductBody = Partial<IProduct>;
 
@@ -70,7 +88,8 @@ export interface IProductWithTokens {
   tokens: AccessAndRefreshTokens;
 }
 
-export interface IProductModel extends Model<IProductDoc> {
+// export type IProductModel = Model<IProductDoc>;
+export interface IProductModel extends PaginateModel<IProductDoc> {
   isLabelTaken(
     email: string,
     excludeProductId?: Types.ObjectId
@@ -94,4 +113,10 @@ export interface IProductService {
   getProductById: (id: string) => Promise<IProductDoc | null>;
   verifyProduct: (id: string) => Promise<IProductDoc | null>;
   forgotPassword: (email: string) => Promise<void>;
+}
+
+export interface ISearchProductRequestParams {
+  search: string;
+  sort_field: string;
+  sort_type: string;
 }

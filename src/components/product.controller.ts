@@ -1,5 +1,10 @@
 import { Application, NextFunction, Request, Response } from 'express';
-import { IProductDoc, IProductService } from '../interfaces/product.interface';
+import { PaginateResult } from 'mongoose';
+import {
+  IProductDoc,
+  IProductService,
+  ISearchProductRequestParams,
+} from '../interfaces/product.interface';
 import { LoginType } from '../lib/constants';
 import { ProductError } from '../lib/errors';
 import * as responsehandler from '../lib/response-handler';
@@ -27,16 +32,20 @@ export default class ProductController extends BaseApi {
       // Validator('postProductValidation'),
       this.createProduct.bind(this)
     );
-    this.router.get(
-      '/:productId',
-      Validator('getProductValidation'),
-      this.getProduct.bind(this)
-    );
-
     this.router.put(
       '/:productId',
       // Validator('updateProductValidation'),
       this.updateProduct.bind(this)
+    );
+    this.router.get(
+      '/search',
+      // Validator('searchProductValidation'),
+      this.searchProduct.bind(this)
+    );
+    this.router.get(
+      '/:productId',
+      // Validator('getProductValidation'),
+      this.getProduct.bind(this)
     );
   }
 
@@ -59,7 +68,9 @@ export default class ProductController extends BaseApi {
     next: NextFunction
   ): Promise<void> {
     try {
-      const product = await this._productService.getProductById(req.body);
+      const product = await this._productService.getProductById(
+        req.params.productId as string
+      );
       this.sendResponse(product, res);
     } catch (err) {
       next(err);
@@ -82,7 +93,25 @@ export default class ProductController extends BaseApi {
     }
   }
 
-  sendResponse(product: IProductDoc | null, res: Response) {
+  public async searchProduct(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const product = await this._productService.searchProduct(
+        req.query as unknown as ISearchProductRequestParams
+      );
+      this.sendResponse(product, res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  sendResponse(
+    product: PaginateResult<IProductDoc> | IProductDoc | IProductDoc[] | null,
+    res: Response
+  ) {
     res.locals.data = product;
     responsehandler.send(res);
   }

@@ -1,4 +1,5 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { PaginateModel, Schema } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 import { IProductDoc, IProductModel } from '../interfaces/product.interface';
 
 import { IUserDoc, IUserModel } from '../interfaces/user.interface';
@@ -6,116 +7,284 @@ import { CartDeliveryDetailsSchema, ModifiedBySchema } from './common.model';
 
 const { ObjectId } = mongoose.Schema.Types;
 
-const AvailabilitySchema = new Schema({
-  availability_date: {
-    type: Date,
-    default: null,
+const AvailabilitySchema = new Schema(
+  {
+    next_availability_date: {
+      type: Date,
+      default: null,
+    },
+    in_stock: {
+      type: Boolean,
+      default: true,
+    },
   },
-  is_available: {
-    type: Date,
-    default: null,
-  },
-});
+  {
+    _id: false,
+  }
+);
 
-const CostSchema = new Schema({
-  mrp: {
-    type: String,
-    default: '',
+const TaxSchema = new Schema(
+  {
+    tax_type: {
+      type: String,
+      default: 'IGST',
+    },
+    tax_amount: {
+      type: Number,
+      default: 0,
+    },
+    taxable_on_value: {
+      type: Number,
+      default: 0,
+    },
   },
-  tax: {
-    type: String,
-    default: '',
-  },
-});
+  {
+    _id: false,
+  }
+);
 
-const OfferSchema = new Schema({
-  type: {
-    type: String,
-    default: '',
-  },
-  condition: {
-    type: [],
-    default: [],
-  },
-  off_type: {
-    type: String,
-    enum: ['flat', 'flat_percent', 'upto'],
-    default: '',
-  },
-  tnc: {
-    type: String,
-    enum: ['flat', 'flat_percent', 'upto'],
-    default: '',
-  },
-});
+// const TaxSchema = new Schema({
+//   tax_type: {
+//     type: String,
+//     default: '',
+//   },
+//   taxable_value: {
+//     type: Number,
+//     default: 0,
+//   },
+// });
 
-const AttachmentSchema = new Schema({
-  low_res: {
-    type: String,
-    default: '',
+const ProductConfigSchema = new Schema(
+  {
+    is_shipping_charges_combined_with_gross_amount: {
+      type: Boolean,
+      default: false,
+    },
   },
-  high_res: {
-    type: String,
-    default: '',
-  },
-  name: {
-    type: String,
-    default: '',
-  },
-  type: {
-    type: String,
-    required: true,
-  },
-  sequence: {
-    type: Number,
-    required: true,
-  },
-});
+  {
+    _id: false,
+  }
+);
 
-const WarrantySchema = new Schema({
-  covered: {
-    type: String,
-    default: '',
+const CostSchema = new Schema(
+  {
+    mrp: {
+      type: Number,
+      default: 0,
+    },
+    selling_price: {
+      type: Number,
+      default: 0,
+    },
+    gross_amount: {
+      type: Number,
+      required: true,
+    },
+    discount: {
+      type: Number,
+      default: 0,
+    },
+    tax_info: {
+      type: TaxSchema,
+      required: true,
+      // default: null,
+    },
+    currency: {
+      type: String,
+      // default: null,
+    },
+    // gst_info: {
+    //   type: GstSchema,
+    //   required: true,
+    //   // default: null,
+    // },
   },
-  not_covered: {
-    type: String,
-    default: '',
-  },
-  unit: {
-    type: String,
-    default: '',
-  },
-  span: {
-    type: Number,
-    default: '',
-  },
-});
+  {
+    _id: false,
+  }
+);
 
-const DimensionsSchema = new Schema({
-  size: {
-    type: String,
-    default: '',
+const OfferSchema = new Schema(
+  {
+    type: {
+      type: String,
+      default: '',
+    },
+    condition: {
+      type: [],
+      default: [],
+    },
+    off_type: {
+      type: String,
+      enum: ['flat', 'flat_percent', 'upto'],
+      default: '',
+    },
+    tnc: {
+      type: String,
+      enum: ['flat', 'flat_percent', 'upto'],
+      default: '',
+    },
   },
-  size_type: {
-    type: String,
-    default: '',
-  },
-  size_unit: {
-    type: String,
-    default: '',
-  },
-});
+  {
+    _id: false,
+  }
+);
 
-const ProductSpecificationSchema = new Schema({
-  section_name: {
-    type: String,
-    default: null,
+const AttachmentSchema = new Schema(
+  {
+    low_res: {
+      type: String,
+      default: '',
+    },
+    high_res: {
+      type: String,
+      default: '',
+    },
+    name: {
+      type: String,
+      default: '',
+    },
+    type: {
+      type: String,
+      required: true,
+    },
+    sequence: {
+      type: Number,
+      required: true,
+    },
   },
-  values: {
-    type: Object,
-    default: null,
+  {
+    _id: false,
+  }
+);
+
+const ReviewAndRatingsSchema = new Schema(
+  {
+    review_count: {
+      type: Number,
+      default: 0,
+    },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    rated_customer_count: {
+      type: Number,
+      default: 0,
+    },
   },
-});
+  {
+    _id: false,
+  }
+);
+
+const ManufacturerInfoSchema = new Schema(
+  {
+    country_origin: {
+      type: String,
+      default: '',
+    },
+    manufacturer_id: {
+      type: ObjectId,
+      default: null,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+const SellerInfofSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    seller_id: {
+      type: ObjectId,
+      required: true,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+const DimensionsSchema = new Schema(
+  {
+    size: {
+      type: String,
+      default: '',
+    },
+    size_type: {
+      type: String,
+      default: '',
+    },
+    size_unit: {
+      type: String,
+      default: '',
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+const WarrantySchema = new Schema(
+  {
+    covered: {
+      type: String,
+      default: '',
+    },
+    not_covered: {
+      type: String,
+      default: '',
+    },
+    unit: {
+      type: String,
+      default: '',
+    },
+    span: {
+      type: Number,
+      default: '',
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+const PaymentOptionSchema = new Schema(
+  {
+    section_name: {
+      type: String,
+      default: null,
+    },
+    values: {
+      type: Object,
+      default: null,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+const ProductSpecificationSchema = new Schema(
+  {
+    section_name: {
+      type: String,
+      default: null,
+    },
+    values: {
+      type: Object,
+      default: null,
+    },
+  },
+  {
+    _id: false,
+  }
+);
 
 const ProductSchema = new Schema({
   brand: {
@@ -176,38 +345,28 @@ const ProductSchema = new Schema({
     type: String,
     default: '',
   },
-  delivery_details: {
-    type: CartDeliveryDetailsSchema,
-    default: null,
-  },
   manufacturer_info: {
-    type: {
-      country_origin: {
-        type: String,
-        default: '',
-      },
-      manufacturer_id: {
-        type: ObjectId,
-        default: null,
-      },
-    },
+    type: ManufacturerInfoSchema,
     default: null,
   },
   seller_info: {
-    type: {
-      name: {
-        type: String,
-        required: true,
-      },
-      seller_id: {
-        type: ObjectId,
-        required: true,
-      },
-    },
+    type: SellerInfofSchema,
     required: true,
+  },
+  product_config: {
+    type: ProductConfigSchema,
+    required: true,
+  },
+  review_and_ratings: {
+    type: ReviewAndRatingsSchema,
+    default: null,
   },
   modified_by: {
     type: [ModifiedBySchema],
+    default: [],
+  },
+  payment_options: {
+    type: [PaymentOptionSchema],
     default: [],
   },
   created_date: {
@@ -249,6 +408,8 @@ ProductSchema.static(
     return !!Product;
   }
 );
+
+ProductSchema.plugin(mongoosePaginate);
 
 const Product = mongoose.model<IProductDoc, IProductModel>(
   'products',

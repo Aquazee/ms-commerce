@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+import mongoose, { PaginateResult } from 'mongoose';
+import BaseApi from '../components/BaseApi';
 
 import {
   NewCreatedProduct,
@@ -7,7 +8,7 @@ import {
 } from '../interfaces/product.interface';
 import Product from '../models/product.model';
 
-export default class ProductAccessor {
+export default class ProductAccessor extends BaseApi {
   /**
    * Register a product
    * @param {NewCreatedProduct} productBody
@@ -15,7 +16,11 @@ export default class ProductAccessor {
    */
   createProduct = async (
     productBody: NewCreatedProduct
-  ): Promise<IProductDoc> => Product.create(productBody);
+  ): Promise<IProductDoc> => {
+    const productDetails = productBody;
+    productDetails.cost.currency = this.config.currency;
+    return Product.create(productDetails);
+  };
 
   /**
    * Get product by id
@@ -57,8 +62,10 @@ export default class ProductAccessor {
    * @param {UpdateProductBody} updateBody
    * @returns {Promise<IProductDoc | null>}
    */
-  getProductByQuery = async (query: any): Promise<IProductDoc | null> =>
-    Product.findOne(query);
+  getProductByQuery = async (
+    query: any,
+    options: any
+  ): Promise<PaginateResult<IProductDoc>> => Product.paginate(query, options);
 
   /**
    * Get product by keywords
@@ -69,4 +76,8 @@ export default class ProductAccessor {
     keywords: string[]
   ): Promise<IProductDoc | null> =>
     Product.findOne({ keywords: { $in: keywords } });
+
+  register() {
+    throw new Error('Method not implemented.');
+  }
 }
