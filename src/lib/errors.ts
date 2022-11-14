@@ -72,3 +72,45 @@ export const ProductError = {
     status: httpStatus.BAD_REQUEST,
   },
 };
+
+export const CartError = {
+  CartNotFound: {
+    error: 'CartNotFound',
+    message: 'Cart not found',
+    status: httpStatus.NOT_FOUND,
+  },
+  DeliveryUnavailable: {
+    error: 'DeliveryUnavailable',
+    message: 'Delivery not available.',
+    status: httpStatus.BAD_REQUEST,
+  },
+};
+
+export const PaymentError = {
+  PaymentNotFound: {
+    error: 'PaymentNotFound',
+    message: 'Payment not found',
+    status: httpStatus.NOT_FOUND,
+  },
+};
+
+export const OrderError = {
+  OrderNotFound: {
+    error: 'OrderNotFound',
+    message: 'Order not found',
+    status: httpStatus.NOT_FOUND,
+  },
+};
+
+export const AuthError = {
+  AuthenticationRequired: {
+    error: 'AuthenticationRequired',
+    message: 'Please authenticate',
+    status: httpStatus.UNAUTHORIZED,
+  },
+  TokenNotFound: {
+    error: 'TokenNotFound',
+    message: 'Token not found',
+    status: httpStatus.NOT_FOUND,
+  },
+};
