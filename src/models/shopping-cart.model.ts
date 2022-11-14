@@ -1,13 +1,10 @@
-import bcrypt from 'bcryptjs';
+import _ from 'lodash';
 import mongoose, { Schema } from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
-import validator from 'validator';
 
 import { IUserDoc, IUserModel } from '../interfaces/user.interface';
-import convertToJSON from '../lib/convert-to-json';
 import {
   ProductDetailsSchema,
-  DeliveryDetailsSchema,
+  CartDeliveryDetailsSchema,
   ModifiedBySchema,
 } from './common.model';
 
@@ -29,7 +26,7 @@ const ShoppingCartSchema = new Schema({
     required: true,
   },
   delivery_details: {
-    type: DeliveryDetailsSchema,
+    type: CartDeliveryDetailsSchema,
     default: null,
   },
   modified_by: {
@@ -48,6 +45,13 @@ const ShoppingCartSchema = new Schema({
     type: Number,
     default: 1,
   },
+});
+
+ShoppingCartSchema.pre('save', async function (next) {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  const cart = this;
+  cart.user_id = _.get(cart, 'user_details.user_id');
+  next();
 });
 
 const ShoppingCarts = mongoose.model<IUserDoc, IUserModel>(
