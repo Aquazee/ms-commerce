@@ -2,20 +2,17 @@ import bcrypt from 'bcryptjs';
 import mongoose, { Schema } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
+import { IOrderDoc, IOrderModel } from '../interfaces/order.interface';
 
 import { IUserDoc, IUserModel } from '../interfaces/user.interface';
 import convertToJSON from '../lib/convert-to-json';
 import {
   ProductDetailsSchema,
-  DeliveryDetailsSchema,
   ModifiedBySchema,
   OrderDeliveryDetailsSchema,
 } from './common.model';
 
 const { ObjectId } = mongoose.Schema.Types;
-
-interface IOrderDoc {}
-interface IOrderModel {}
 
 const UserDetailsSchema = new Schema({});
 
