@@ -9,12 +9,20 @@ interface IOrderManager {
   isOrderInactive: (order: IOrderDoc) => void;
 }
 
-class OrderManager implements IOrderManager {
+class OrderManager extends BaseApi {
+  // constructor() {
+  //   super();
+  // }
+
   isOrderSplitRequired(order: IOrder) {
     if ('is_active' in order) {
       return false;
     }
     return true;
+  }
+
+  register() {
+    throw new Error('Method not implemented.');
   }
 }
 

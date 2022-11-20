@@ -119,11 +119,10 @@ export default class MailAdapter extends BaseApi {
 
   public sendEmail = async (userMailData: IUserMailBaseData) => {
     const method = 'sendEmail';
-    const me = this;
     try {
       const emailDetails = this.getEmailDetails(userMailData.event);
       const templatePath = path.resolve(
-        me.config.server.root_path + emailDetails.templatePath
+        this.config.server.root_path + emailDetails.templatePath
       );
       const mailOption: IMailOptions = {
         to: userMailData.body.email,

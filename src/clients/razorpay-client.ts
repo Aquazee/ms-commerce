@@ -13,9 +13,9 @@ const scope = `RazorpayClient#${1.0}`;
 class RazorpayClient extends BaseApi {
   private _instance: IRazorpayInstance;
 
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 
   init() {
     const { user, pass } =
@@ -27,7 +27,6 @@ class RazorpayClient extends BaseApi {
   }
 
   createCustomers(options: IUserRazorPay) {
-    const me = this;
     const method = 'createUser';
     try {
       const userResp = this._instance.customers.create(options);
@@ -43,7 +42,6 @@ class RazorpayClient extends BaseApi {
   }
 
   createOrder(options: IOrderOptionsRazorPay) {
-    const me = this;
     const method = 'createOrder';
     try {
       const orderResp = this._instance.orders.create(options);

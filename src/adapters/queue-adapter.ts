@@ -20,11 +20,11 @@ export default class QueueAdapter extends BaseApi {
       this._queueServiceConfig[this._queueServiceConfig.enabled];
     const CONN_URL = `${this._queueServiceConfig.enabled}://${auth.user}:${auth.pass}@${host}:${port}/${channel}`;
     amqp.connect(CONN_URL, (err, conn) => {
-      conn.createChannel((err, channel) => {
-        if (err) {
+      conn.createChannel((err1, channel1) => {
+        if (err1) {
           logger.error(Messages.RabbitMqChannelClosed);
         }
-        this._ch = channel;
+        this._ch = channel1;
       });
     });
   }

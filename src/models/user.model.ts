@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
 
 import { IUserDoc, IUserModel } from '../interfaces/user.interface';
-import convertToJSON from '../lib/convert-to-json';
 import { ModifiedBySchema } from './common.model';
 import VerificationModel, { VerificationSchema } from './verification.model';
 
@@ -216,7 +215,7 @@ const UserSchema = new mongoose.Schema(
 );
 
 // add plugin that converts mongoose to json
-UserSchema.plugin(convertToJSON);
+// UserSchema.plugin(convertToJSON);
 
 /**
  * Check if email is taken
@@ -243,12 +242,14 @@ UserSchema.static(
 UserSchema.method(
   'isPasswordMatch',
   async function (password: string): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const user = this;
     return bcrypt.compare(password, user.password);
   }
 );
 
 UserSchema.pre('save', async function (next) {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
   const user = this;
   if (user.isModified('password')) {
     user.password = await bcrypt.hash(user.password as string, 8);

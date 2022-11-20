@@ -9,9 +9,9 @@ import {
 import Order from '../models/order.model';
 
 export default class OrderAccessor extends BaseApi {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 
   /**
    * Register a order

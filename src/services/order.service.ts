@@ -1,3 +1,4 @@
+import BaseApi from '../components/BaseApi';
 import OrderAccessor from '../data-access/order-accessor';
 import {
   NewCreatedOrder,
@@ -14,12 +15,13 @@ import Order from '../models/order.model';
 
 const scope = `OrderService#${1}`;
 
-export default class OrderService {
+export default class OrderService extends BaseApi {
   private _orderAccessor;
 
   // private _orderManager;
 
   constructor() {
+    super();
     this._orderAccessor = new OrderAccessor();
   }
 
@@ -66,4 +68,8 @@ export default class OrderService {
     }
     return order;
   };
+
+  register() {
+    throw new Error('Method not implemented.');
+  }
 }

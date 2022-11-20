@@ -37,12 +37,12 @@ export interface INodeJsNetworkInterfaceBase {
 
 export interface INodeJsNetworkInterfaceInfoIPv4
   extends INodeJsNetworkInterfaceBase {
-  family: "IPv4";
+  family: 'IPv4';
 }
 
 export interface INodeJsNetworkInterfaceInfoIPv6
   extends INodeJsNetworkInterfaceBase {
-  family: "IPv6";
+  family: 'IPv6';
   scopeid: number;
 }
 

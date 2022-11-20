@@ -5,7 +5,6 @@ import validator from 'validator';
 import { IOrderDoc, IOrderModel } from '../interfaces/order.interface';
 
 import { IUserDoc, IUserModel } from '../interfaces/user.interface';
-import convertToJSON from '../lib/convert-to-json';
 import {
   ProductDetailsSchema,
   ModifiedBySchema,

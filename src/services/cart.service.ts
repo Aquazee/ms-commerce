@@ -1,3 +1,4 @@
+import BaseApi from '../components/BaseApi';
 import CartAccessor from '../data-access/cart-accessor';
 import {
   NewCreatedCart,
@@ -14,12 +15,13 @@ import Cart from '../models/shopping-cart.model';
 
 const scope = `CartService#${1}`;
 
-export default class CartService {
+export default class CartService extends BaseApi {
   private _cartAccessor;
 
   // private _cartManager;
 
   constructor() {
+    super();
     this._cartAccessor = new CartAccessor();
   }
 
@@ -66,4 +68,8 @@ export default class CartService {
     }
     return cart;
   };
+
+  register() {
+    throw new Error('Method not implemented.');
+  }
 }
