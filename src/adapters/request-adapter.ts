@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   IInitConfig,
   IRequestPost,
-  IRequestClient,
+  // IRequestClient,
   IRequestHeaders,
 } from '../interfaces/request-client.interface';
 import logger from '../lib/logger';
@@ -12,16 +12,12 @@ import ESAdapter from './es-adapter';
 
 const scope = `RequestClient#${'0.1'}`;
 
-export default class RequestClient<IRequestClient> {
+export default class RequestClient {
   public baseUrl = '';
 
   private _esAdapter;
 
-  public header: IRequestHeaders = {
-    'Content-Type': 'application/json',
-    'User-Agent': 'ms-commerce',
-    Connection: 'keep-alive',
-  };
+  public header: IRequestHeaders;
 
   constructor(url: string) {
     this.initConfig({ url });
@@ -30,9 +26,13 @@ export default class RequestClient<IRequestClient> {
 
   initConfig({ url }: IInitConfig) {
     this.baseUrl = url;
+    this.setHeaders();
   }
 
   setHeaders(header?: IRequestHeaders) {
+    this.header['Content-Type'] = 'application/json';
+    this.header['User-Agent'] = 'ms-commerce';
+    this.header.Connection = 'keep-alive';
     this.header = Object.assign(this.header, header);
   }
 

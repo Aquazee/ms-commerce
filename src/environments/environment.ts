@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { config as configDotenv } from 'dotenv';
 
+import ServiceConfig from '../../setup/validate/config';
 import { EnvironmentFile, Environments } from './environment.constant';
 import IEnvironment from './environment.interface';
 
@@ -13,8 +14,9 @@ class Environment implements IEnvironment {
   public applyEncryption: boolean;
 
   constructor(NODE_ENV?: string) {
+    const { public_port } = new ServiceConfig().config.service_config.server;
     const env: string = NODE_ENV || process.env.NODE_ENV || Environments.DEV;
-    const port: string | undefined | number = process.env.PORT || 3000;
+    const port: string | undefined | number = public_port || 3000;
     this.setEnvironment(env);
     this.port = Number(port);
     this.applyEncryption = process.env.APPLY_ENCRYPTION === 'true';

@@ -1,5 +1,6 @@
 import * as util from 'util';
-import * as express from 'express';
+import { NextFunction, Request, Response } from 'express';
+import httpStatus from 'http-status';
 import { StatusCodes } from 'http-status-codes';
 import ApiError, { IError } from '../abstractions/ApiError';
 import Crypto from '../lib/crypto';
@@ -9,13 +10,26 @@ export interface IErrorHandler extends IError {
   stack: string;
 }
 
+const checkMongooseValidationError = (err: any) => {
+  let error;
+  if (err._message && err._message.indexOf('validation') !== -1) {
+    error = new ApiError(
+      err.message,
+      httpStatus.BAD_REQUEST,
+      'Validation Failed'
+    );
+  }
+  return error;
+};
+
 const addErrorHandler = (
   err: ApiError,
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
+  req: Request,
+  res: Response,
+  next: NextFunction
 ): void => {
   if (err) {
+    checkMongooseValidationError(err);
     const status: number = err.status || StatusCodes.INTERNAL_SERVER_ERROR;
     logger.debug(`REQUEST HANDLING ERROR:
         \nERROR:\n${JSON.stringify(err)}

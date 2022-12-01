@@ -1,65 +1,143 @@
 import bcrypt from 'bcryptjs';
-import mongoose from 'mongoose';
+import mongoose, { PaginateModel, Schema } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
+import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
-import { IAddressModel } from '../interfaces/common.interface';
-import { IUserDoc, IUserModel } from '../interfaces/user.interface';
-import convertToJSON from '../lib/convert-to-json';
 
-const AddressSchema = new mongoose.Schema<IAddressModel>({
-  line_1: {
+import { IUserDoc, IUserModel } from '../interfaces/user.interface';
+import { ModifiedBySchema } from './common.model';
+import VerificationModel, { VerificationSchema } from './verification.model';
+
+const { ObjectId } = mongoose.Schema.Types;
+
+const CardValiditySchema = new Schema({
+  year: {
     type: String,
     required: true,
-    trim: true,
   },
-  line_2: {
+  month: {
     type: String,
     required: true,
-    trim: true,
-  },
-  postal_code: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  city: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  country: {
-    type: String,
-    required: true,
-    trim: true,
   },
 });
 
-const userSchema = new mongoose.Schema<IUserDoc, IUserModel>(
+const CardSchema = new Schema({
+  c_id: {
+    type: String,
+    required: true,
+  },
+  card_no: {
+    type: String,
+    required: true,
+  },
+  name_on_card: {
+    type: String,
+    required: true,
+  },
+  validity: {
+    type: CardValiditySchema,
+    required: true,
+  },
+  is_active: {
+    type: Number,
+    default: 1,
+  },
+});
+
+const PANCardDetailsSchema = new Schema({
+  full_name: {
+    type: String,
+    required: true,
+  },
+  card_no: {
+    type: String,
+    required: true,
+  },
+  img: {
+    type: String,
+    required: true,
+  },
+});
+
+const AddressDetailsSchema = new Schema({
+  aid: {
+    type: Number,
+  },
+  default: {
+    type: Number,
+  },
+  line_1: {
+    type: String,
+  },
+  line_2: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  pin_code: {
+    type: String,
+  },
+  landmark: {
+    type: String,
+  },
+  type: {
+    type: String,
+  },
+});
+
+const UserSchema = new mongoose.Schema(
   {
     user_name: {
       type: String,
-      required: true,
-      trim: true,
+      default: '',
     },
-    name: {
+    first_name: {
       type: String,
-      required: true,
-      trim: true,
+      default: '',
+    },
+    last_name: {
+      type: String,
+      default: '',
+    },
+    mobile: {
+      type: String,
+      default: '',
+    },
+    alt_mobile: {
+      type: String,
+      default: '',
+    },
+    profile_pic: {
+      type: String,
+      default: '',
+    },
+    social: {
+      facebook_id: {
+        type: String,
+        default: '',
+      },
+      google_id: {
+        type: String,
+        default: '',
+      },
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
       trim: true,
       lowercase: true,
-      validate(value: string) {
-        if (!validator.isEmail(value)) {
-          throw new Error('Invalid email');
+      unique: true,
+      validate: (value: string) => {
+        if (Boolean(value) && !validator.isEmail(value)) {
+          throw new Error('Email is not valid');
         }
       },
     },
     password: {
       type: String,
-      required: true,
       trim: true,
       minlength: 8,
       validate(value: string) {
@@ -71,26 +149,73 @@ const userSchema = new mongoose.Schema<IUserDoc, IUserModel>(
       },
       private: true, // used by the toJSON plugin
     },
-    is_email_verified: {
-      type: Boolean,
-      default: false,
+    gender: {
+      type: Number,
+      default: 0,
     },
-    mobile: {
-      type: String,
-      default: '',
+    address_details: {
+      type: [AddressDetailsSchema],
     },
-    address: {
-      type: AddressSchema,
+    pan_details: {
+      type: PANCardDetailsSchema,
       default: null,
+      required: false,
+    },
+    cards: {
+      type: [CardSchema],
+      default: null,
+    },
+    verification: {
+      type: VerificationSchema,
+      default: new VerificationModel(),
+    },
+    wishList: {
+      type: [ObjectId],
+      default: [],
+    },
+    role: {
+      type: [String],
+      default: ['user'],
+    },
+    user_type: {
+      type: [String],
+      enum: ['manufacturer', 'seller', 'buyer'],
+      default: 'buyer',
+    },
+    block_expires: {
+      type: Date,
+      select: false,
+      default: null,
+    },
+    login_attempts: {
+      type: Number,
+      default: 0,
+    },
+    modified_by: {
+      type: [ModifiedBySchema],
+      default: [],
+    },
+    created_date: {
+      type: Date,
+      default: Date.now,
+    },
+    modified_date: {
+      type: Date,
+      default: null,
+    },
+    is_active: {
+      type: Number,
+      default: 1,
     },
   },
   {
-    timestamps: true,
+    versionKey: false,
+    timestamps: false,
   }
 );
 
 // add plugin that converts mongoose to json
-userSchema.plugin(convertToJSON);
+// UserSchema.plugin(convertToJSON);
 
 /**
  * Check if email is taken
@@ -98,7 +223,7 @@ userSchema.plugin(convertToJSON);
  * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
  * @returns {Promise<boolean>}
  */
-userSchema.static(
+UserSchema.static(
   'isEmailTaken',
   async function (
     email: string,
@@ -114,22 +239,26 @@ userSchema.static(
  * @param {string} password
  * @returns {Promise<boolean>}
  */
-userSchema.method(
+UserSchema.method(
   'isPasswordMatch',
   async function (password: string): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const user = this;
     return bcrypt.compare(password, user.password);
   }
 );
 
-userSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function (next) {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
   const user = this;
   if (user.isModified('password')) {
-    user.password = await bcrypt.hash(user.password, 8);
+    user.password = await bcrypt.hash(user.password as string, 8);
   }
   next();
 });
 
-const User = mongoose.model<IUserDoc, IUserModel>('User', userSchema);
+UserSchema.plugin(mongoosePaginate);
+
+const User = mongoose.model<IUserDoc, IUserModel>('User', UserSchema);
 
 export default User;

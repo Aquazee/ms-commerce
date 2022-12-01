@@ -1,27 +1,33 @@
-import httpStatus from 'http-status';
+import moment from 'moment';
+import { v4 as uuidv4 } from 'uuid';
 
-import ApiError from '../abstractions/ApiError';
 import MailAdapter from '../adapters/mail-adapter';
-import { UserAccessor } from '../data-access';
-import { IUserMailBaseData, IUserMailData } from '../interfaces/mail.interface';
+import UserAccessor from '../data-access/user-accessor';
+import { IUserMailBaseData } from '../interfaces/mail.interface';
 import {
   NewCreatedUser,
   UpdateUserBody,
   IUserDoc,
   IUserService,
+  IUser,
+  IGetUserRequest,
 } from '../interfaces/user.interface';
-import { EmailTypeDetails } from '../lib/constants';
 import { UserError } from '../lib/errors';
 import { convertToObjectId } from '../lib/helper';
+import logger from '../lib/logger';
+import UserManager from '../managers/user-manager';
 import User from '../models/user.model';
 
 const scope = `UserService#${1}`;
 
-export default class UserService implements IUserService {
-  private _mailAdapter;
+export default class UserService {
+  private _userAccessor;
+
+  private _userManager;
 
   constructor() {
-    this._mailAdapter = new MailAdapter();
+    this._userAccessor = new UserAccessor();
+    this._userManager = new UserManager();
   }
 
   /**
@@ -29,63 +35,25 @@ export default class UserService implements IUserService {
    * @param {NewCreatedUser} userBody
    * @returns {Promise<IUserDoc>}
    */
-  createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
-    if (await User.isEmailTaken(userBody.email)) {
-      throw UserError.EmailTaken;
-    }
-    return UserAccessor.createUser(userBody);
-  };
-
-  /**
-   * Register a user
-   * @param {NewCreatedUser} userBody
-   * @returns {Promise<IUserDoc>}
-   */
-  registerUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
-    const user = await UserAccessor.createUser(userBody);
-    const mailData: IUserMailBaseData = {
-      body: user,
-      event: EmailTypeDetails.UserEmailVerification.name,
-    };
-    await this._mailAdapter.sendEmail(mailData);
-    return user;
-  };
-
-  /**
-   * Register a user
-   * @param {NewUserId} userId
-   * @returns {Promise<IUserDoc>}
-   */
-  verifyUser = async (userId: string): Promise<IUserDoc> => {
-    const convertedUserId = convertToObjectId(userId);
-    const user = await UserAccessor.getUserById(convertedUserId);
-    if (!user) {
-      throw UserError.UserNotFound;
-    }
-    user.is_email_verified = true;
-    await user.save();
-    return user;
-  };
-
-  /**
-   * Get user by id
-   * @param {mongoose.Types.ObjectId} id
-   * @returns {Promise<IUserDoc | null>}
-   */
-  getUserById = async (id: string): Promise<IUserDoc | null> =>
-    User.findById(convertToObjectId(id));
+  createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> =>
+    this._userAccessor.createUser(userBody);
 
   /**
    * Get user by email
    * @param {string} email
    * @returns {Promise<IUserDoc | null>}
    */
-  getUserByEmail = async (email: string): Promise<IUserDoc | null> =>
-    User.findOne({ email });
+  getUserByEmail = async (email: string) => {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw UserError.UserNotFound;
+    }
+    return user;
+  };
 
   /**
    * Update user by id
-   * @param {mongoose.Types.ObjectId} userId
+   * @param {string} userId
    * @param {UpdateUserBody} updateBody
    * @returns {Promise<IUserDoc | null>}
    */
@@ -93,19 +61,87 @@ export default class UserService implements IUserService {
     userId: string,
     updateBody: UpdateUserBody
   ): Promise<IUserDoc | null> => {
-    const convertedUserId = convertToObjectId(userId);
-    const user = await UserAccessor.getUserById(convertedUserId);
+    const user = await this.getUserById(userId);
+    await this.checkIsEmailTaken(updateBody.email);
+    Object.assign(user, updateBody);
+    await user.save();
+    return user;
+  };
+
+  /**
+   * Update user by id
+   * @param {string} userId
+   * @param {UpdateUserBody} updateBody
+   * @returns {Promise<IUserDoc | null>}
+   */
+  forgotPassword = async (
+    userId: string,
+    updateBody: UpdateUserBody
+  ): Promise<IUserDoc | null> => {
+    const user = await this.getUserById(userId);
+    Object.assign(user, updateBody);
+    await user.save();
+    return user;
+  };
+
+  /**
+   * Check Email already exists for other user
+   * @param {string | undefined} userId
+   * @returns {Promise<IUserDoc | null>}
+   */
+  checkIsEmailTaken = async (email: string | undefined) => {
+    if (email && (await User.isEmailTaken(email))) {
+      throw UserError.EmailTaken;
+    }
+  };
+
+  getUser = async (payload: IGetUserRequest) => {
+    const user = await this._userAccessor.getUserById(
+      convertToObjectId(payload.userId as string)
+    );
     if (!user) {
       throw UserError.UserNotFound;
     }
-    if (
-      updateBody.email &&
-      (await User.isEmailTaken(updateBody.email, convertedUserId))
-    ) {
-      throw UserError.EmailTaken;
+    return user;
+  };
+
+  getUserById = async (userId: string) => {
+    const user = await this._userAccessor.getUserById(
+      convertToObjectId(userId)
+    );
+    if (!user) {
+      throw UserError.UserNotFound;
     }
-    Object.assign(user, updateBody);
-    await user.save();
+    return user;
+  };
+
+  /**
+   * Get user by Facebook id
+   * @param {String} id
+   * @returns {Promise<IUserDoc | null>}
+   */
+  getUserByFbId = async (id: string): Promise<IUserDoc | null> =>
+    this.getUserBySocialId('facebook_id', id);
+
+  /**
+   * Get user by Google id
+   * @param {String} id
+   * @returns {Promise<IUserDoc | null>}
+   */
+  getUserByGoogleId = async (id: string): Promise<IUserDoc | null> =>
+    this.getUserBySocialId('google_id', id);
+
+  getUserBySocialId = async (
+    socialPlatformName: string,
+    id: string
+  ): Promise<IUserDoc | null> =>
+    this._userAccessor.getUserByQuery({ [`social.${socialPlatformName}`]: id });
+
+  createUserEmailVerificationDetails = async (email: string) => {
+    const user = await this.getUserByEmail(email);
+    user.verification.email.fcode = uuidv4();
+    user.verification.email.fcode_created = new Date();
+    user.save();
     return user;
   };
 }

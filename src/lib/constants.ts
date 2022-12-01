@@ -11,6 +11,12 @@ export const Environment = {
   local: 'local',
 };
 
+export const LoginType = {
+  facebook: 'facebook',
+  email: 'email',
+  google: 'google',
+};
+
 export const EmailTypeDetails: IEmailTypeDetails = {
   UserEmailVerification: {
     name: 'UserEmailVerification',

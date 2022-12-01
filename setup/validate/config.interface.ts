@@ -3,6 +3,15 @@ export interface Auth {
   pass: string;
 }
 
+export interface ThirdPartyLoginCredentials {
+  client_id: string;
+  client_secret: string;
+  callback_url: string;
+}
+export interface Login {
+  facebook: ThirdPartyLoginCredentials;
+  google: ThirdPartyLoginCredentials;
+}
 export interface ICommonConfig {
   host: string;
   port: number;
@@ -21,8 +30,24 @@ export interface SMTP {
   type: IEmailServiceType;
 }
 
+export interface IPaymentGatewayConfig extends ICommonConfig {
+  protocol: string;
+  api_version: string;
+}
+export interface IPaymentGatewayType {
+  razor_pay: IPaymentGatewayConfig;
+}
+
+type IPaymentGatewayName = 'razorpay';
+export interface IPaymentGateway {
+  enabled: IPaymentGatewayName;
+  type: IPaymentGatewayType;
+}
+
 export interface ThirdParty {
   smtp: SMTP;
+  login: Login;
+  payment_gateway: IPaymentGateway;
 }
 
 interface IDBConfig extends ICommonConfig {
@@ -38,12 +63,38 @@ export interface AllErrors {
   type: string;
 }
 
+export interface ICookieConfig {
+  secret: string;
+  resave: boolean;
+  saveUninitialized: boolean;
+}
+
+export interface IJwtConfig {
+  expiry_mins: number;
+  secret: string;
+}
+
+export interface ICryptoConfig {
+  secret: string;
+}
+
+export interface IPaginationConfig {
+  offset: number;
+  limit: number;
+}
 export interface Server {
   public_port: number;
   private_port: number;
   protocol: 'http' | 'https';
   host: string;
   root_path: string;
+  cookie_config: ICookieConfig;
+  crypto_config: ICryptoConfig;
+  jwt_config: IJwtConfig;
+  allowed_login_attempt: number;
+  block_hours: number;
+  email_verification_max_days: number;
+  pagination_config: IPaginationConfig;
 }
 
 export interface ErrorIndexes {
@@ -85,6 +136,9 @@ export interface ServiceConfig {
   server: Server;
   infrastructure: Infrastructure;
   third_party: ThirdParty;
+  allowed_locales: Array<string>;
+  default_locale: string;
+  currency: string;
 }
 
 export interface IServiceConfig {

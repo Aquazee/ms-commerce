@@ -1,4 +1,5 @@
 import path from 'path';
+import { token } from 'morgan';
 import nodemailer, { Transporter } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import nunjucks from 'nunjucks';
@@ -9,6 +10,7 @@ import {
   ICommonConfig,
 } from '../../setup/validate/config.interface';
 import ApiError from '../abstractions/ApiError';
+import BaseApi from '../components/BaseApi';
 import {
   IMailOptions,
   IUserMailBaseData,
@@ -24,13 +26,11 @@ interface IMailAdapter {
   sendEmail: (userMailData: IUserMailData) => void;
 }
 
-export default class MailAdapter implements IMailAdapter {
+export default class MailAdapter extends BaseApi {
   private _transport: Transporter<SMTPTransport.SentMessageInfo>;
 
-  private _config: IServiceConfig;
-
   constructor() {
-    this._config = new ServiceConfig().config;
+    super();
     this.init();
   }
 
@@ -48,7 +48,7 @@ export default class MailAdapter implements IMailAdapter {
 
   getConfig() {
     const method = 'getConfig';
-    const { enabled, type } = this._config.service_config.third_party.smtp;
+    const { enabled, type } = this.config.third_party.smtp;
     switch (enabled) {
       case MailServer.ses:
         return this._getSesConfig(type.ses);
@@ -84,14 +84,18 @@ export default class MailAdapter implements IMailAdapter {
     templatePath: string;
     userMailData: IUserMailBaseData;
   }) => {
-    const { server } = this._config.service_config;
+    const { server } = this.config;
     const method = 'renderTemplates';
 
     if (templatePath) {
       nunjucks.configure({ autoescape: true });
       return nunjucks.render(templatePath, {
-        ...userMailData,
-        ...server,
+        ...userMailData.body,
+        ...{
+          domain: `${server.protocol}://${server.host}:${server.public_port}`,
+          url: 'www.proflyl.com',
+          company_name: 'Proflyl',
+        },
       });
     }
     const error = new ApiError(Messages.EmailTemplateNotFound);
@@ -115,11 +119,10 @@ export default class MailAdapter implements IMailAdapter {
 
   public sendEmail = async (userMailData: IUserMailBaseData) => {
     const method = 'sendEmail';
-    const me = this;
     try {
       const emailDetails = this.getEmailDetails(userMailData.event);
       const templatePath = path.resolve(
-        me._config.service_config.server.root_path + emailDetails.templatePath
+        this.config.server.root_path + emailDetails.templatePath
       );
       const mailOption: IMailOptions = {
         to: userMailData.body.email,
@@ -146,4 +149,8 @@ export default class MailAdapter implements IMailAdapter {
       throw ex;
     }
   };
+
+  register() {
+    throw new Error('Method not implemented.');
+  }
 }

@@ -59,7 +59,7 @@ export default class Crypto {
     // extract the auth tag
     const tag = cipher.getAuthTag();
 
-    // return [enc1, enc2, iv, tag];
+    // concat the encrypted result with iv and tag
     const encryptedData = Buffer.concat([enc1, enc2, iv, tag]).toString(
       outputEncoding
     );
@@ -87,13 +87,16 @@ export default class Crypto {
     );
 
     // extract iv from encrypted data
-    const iv = bufferData.slice(bufferData.length - 28, bufferData.length - 16);
+    const iv = bufferData.subarray(
+      bufferData.length - 28,
+      bufferData.length - 16
+    );
 
     // extract tag from encrypted data
-    const tag = bufferData.slice(bufferData.length - 16);
+    const tag = bufferData.subarray(bufferData.length - 16);
 
     // extract encrypted text from encrypted data
-    const text = bufferData.slice(0, bufferData.length - 28);
+    const text = bufferData.subarray(0, bufferData.length - 28);
 
     // AES 256 GCM Mode
     const decipher = crypto.createDecipheriv(Crypto.algorithm, key, iv);
@@ -105,7 +108,7 @@ export default class Crypto {
     // @data: It is used to update the cipher by new content
     // @inputEncoding: Input encoding format
     // @outputEncoding: Output encoding format
-    let str: any = decipher.update(text, undefined, outputEncoding);
+    let str = decipher.update(text, undefined, outputEncoding);
 
     // Return the buffer containing the value of cipher object.
     // @outputEncoding: Output encoding format

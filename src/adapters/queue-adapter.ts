@@ -1,17 +1,17 @@
 import amqp from 'amqplib/callback_api';
-import ServiceConfig from '../../setup/validate/config';
+import BaseApi from '../components/BaseApi';
 import logger from '../lib/logger';
 import Messages from '../lib/messages';
 
 const scope = `QueueAdapter#${1.0}`;
 
-export default class QueueAdapter {
+export default class QueueAdapter extends BaseApi {
   private _ch: any;
 
-  private _queueServiceConfig = new ServiceConfig().config.service_config
-    .infrastructure.queue_service;
+  private _queueServiceConfig = this.config.infrastructure.queue_service;
 
   constructor() {
+    super();
     this.init();
   }
 
@@ -20,11 +20,11 @@ export default class QueueAdapter {
       this._queueServiceConfig[this._queueServiceConfig.enabled];
     const CONN_URL = `${this._queueServiceConfig.enabled}://${auth.user}:${auth.pass}@${host}:${port}/${channel}`;
     amqp.connect(CONN_URL, (err, conn) => {
-      conn.createChannel((err, channel) => {
-        if (err) {
+      conn.createChannel((err1, channel1) => {
+        if (err1) {
           logger.error(Messages.RabbitMqChannelClosed);
         }
-        this._ch = channel;
+        this._ch = channel1;
       });
     });
   }
@@ -38,4 +38,8 @@ export default class QueueAdapter {
     this._ch.close();
     logger.info(scope, method, Messages.RabbitMqChannelClosed);
   };
+
+  register() {
+    throw new Error('Method not implemented.');
+  }
 }
