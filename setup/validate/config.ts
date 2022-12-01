@@ -120,7 +120,7 @@ export default class ServiceConfig {
           'utf8'
         )
       );
-      serviceConfigSchema.validate(serviceConfig);
+      // serviceConfigSchema.validate(serviceConfig);
 
       this.config = serviceConfig as IServiceConfig;
       this.config.service_config.server.root_path = process.cwd();

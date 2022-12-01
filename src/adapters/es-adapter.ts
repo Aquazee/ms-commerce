@@ -30,7 +30,7 @@ export default class ESAdapter {
       const endpoint = `${this.index}/doc/${uuidv4()}`;
       const result = await this._requestClient.put({ endpoint, body });
       return result;
-    } catch (ex: Error) {
+    } catch (ex: unknown) {
       logger.error(scope, method, ex);
     }
   };

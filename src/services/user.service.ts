@@ -69,6 +69,22 @@ export default class UserService {
   };
 
   /**
+   * Update user by id
+   * @param {string} userId
+   * @param {UpdateUserBody} updateBody
+   * @returns {Promise<IUserDoc | null>}
+   */
+  forgotPassword = async (
+    userId: string,
+    updateBody: UpdateUserBody
+  ): Promise<IUserDoc | null> => {
+    const user = await this.getUserById(userId);
+    Object.assign(user, updateBody);
+    await user.save();
+    return user;
+  };
+
+  /**
    * Check Email already exists for other user
    * @param {string | undefined} userId
    * @returns {Promise<IUserDoc | null>}
